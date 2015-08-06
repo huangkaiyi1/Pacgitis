@@ -1,0 +1,147 @@
+/*
+  Kaiyi Huang
+  Code sample from a personal project implementing a pacman/pong hybrid game 
+  using the SDL library
+  *
+  *
+  This is the first level of the game. The titular function contains all logically 
+  relevant elements of the level 1 environment. The function makes various calls to
+  methods that help with rendering the graphics, as well as to subroutines in objects
+  instantiated for level 1.
+  
+*/
+
+void level1Reset(Pac *man, Nugget *nugs);
+void level1Finish();
+
+int level1()
+{
+  load_files_Level1(); 
+  const int NUM_STATICS = 6;
+  int nugLocations[7][2] = { {300,250}, {680,300}, {20,280}, {600,300}, 
+			     {300,200}, {600, 350}, {680, 320} };
+
+  //Create collision boxes for static objects
+  initRect( &longVertRect, 250, 105, 490, 20 );
+  initRect( &longVert2Rect, 950, 108, 490, 20 );
+  initRect( &longHorizRect, 360, 80, 15, 490 );
+  initRect( &longHoriz2Rect, 355, 620, 14, 493 );
+  initRect(&starRect, 625, 325, 40, 40);
+  initRect(&startRect, 0, 0, 50, 50);
+  myTimer.start();
+
+  SDL_Rect arrayOfRects1[NUM_STATICS] = { longVertRect, longVert2Rect, longHorizRect, 
+					  longHoriz2Rect, starRect, startRect };
+  accessArray( arrayOfRects1 ); 
+
+  //Instantiate interactable objects
+  Nugget nugs(7);
+
+  Pac man( 20, 20, NUM_STATICS );
+  Ball enemy1( &enemyRect, 700, 500, 6 );
+  Ghost ghost( 30, 400, 3.5 );
+
+  Bounceball ball( 400, 349, 1 );
+  Blackhole hole1( 320, 200, 100), hole2( 320, 500, 100), hole3( 880, 200, 100 ), 
+	    hole4( 880, 500, 100 );
+
+  while ( !gameOver ) 
+  {
+    //start timer
+    fps.start();
+
+    if (death)
+      level1Reset( &man, &nugs );
+
+    //Handle input
+    while( SDL_PollEvent( &event ) )
+    {
+      man.handle_input();
+      if( event.type == SDL_KEYDOWN )
+	if( event.key.keysym.sym == SDLK_ESCAPE)
+	{
+	  clean_up1(); 
+	  return 0; 
+	}
+      if( event.type == SDL_QUIT )
+	//SDL_Quit();
+        return 0;
+    }
+
+    //Draw non-interactable graphics
+    apply_surface( 0, 0, background, screen );
+    apply_surface( startRect.x, startRect.y + 5, startPic, screen );
+    apply_surface( starRect.x, starRect.y, starPic, screen );
+    displayText( myTimer.formatTime(), timeDisplay, 1000, 0, 30, 2 );
+    displayText( "Lives: " + toString(lives) , levelSign, 0, 0, 30, 2 );
+
+    nugs.scan( nugLocations ); //applies surface for all nuggets
+
+    //Check for victory condition
+    if ( nugs.anyLeft() )
+      apply_surface( starRect.x, starRect.y, starPic, screen );
+    else
+    {
+      level1Finish();
+      break;
+    }
+    
+    //Draw static objects
+    apply_surface( longHorizRect.x, longHorizRect.y, longHorizPic , screen );
+    apply_surface( longHoriz2Rect.x, longHoriz2Rect.y, longHorizPic , screen );
+    apply_surface( longVertRect.x, longVertRect.y, longVertPic , screen );
+    apply_surface( longVert2Rect.x, longVert2Rect.y, longVertPic , screen );
+
+    //Move sprite objects
+    man.move();
+    ball.move();
+    hole1.suck(); hole2.suck(); hole3.suck(); hole4.suck();
+    enemy1.move();
+    ghost.move();
+
+    //Update the screen
+    SDL_Flip( screen );
+
+    //Framerate regulation
+    if( fps.get_ticks() < 1000 / FRAMES_PER_SECOND )
+    {
+      SDL_Delay( ( 1000 / FRAMES_PER_SECOND ) - fps.get_ticks() );
+    }
+  }
+
+  clean_up1();
+  return myTimer.get_ticks();
+}
+
+
+
+//If player dies
+void level1Reset(Pac *man, Nugget *nugs)
+{
+  SDL_Delay(1500);
+  lives--;
+  death = false;
+  if( lives == 0)
+  {
+    displayText( "Game Over", levelSign, 350, 150, 60, 1 );
+    SDL_Flip( screen );
+    SDL_Delay(3000);
+    gameOver = true;
+  }
+  else{ man->reset( 20, 20 ); nugs->reset(); }  // Need to reset bouncing balls
+}
+
+
+
+//If victory condition is achieved
+void level1Finish()
+{
+  apply_surface( starRect.x, starRect.y, shiningStarPic, screen );
+  if ( check_collision( &starRect, &pacRect ) )
+  {
+    displayText( "LEVEL 1 COMPLETE!", levelSign, 450, 200, 60, 1 );
+    SDL_Flip( screen );
+    SDL_Delay(4000);
+    lives = 3;
+  }
+}

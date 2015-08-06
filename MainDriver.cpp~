@@ -1,0 +1,99 @@
+/*
+  Kaiyi Huang
+  Code sample from a personal project implementing 
+  a pacman/pong hybrid game using the SDL library
+  *
+  *
+  This is the game driver file. The main function 
+  calls a menu method that displays a menu and 
+  prompts for user selection. The Main method 
+  then executes the selection.
+*/
+
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <cmath>
+#include <stdlib.h>
+#include <vector>
+#include <fstream>
+#include "SDL/SDL_ttf.h"
+#include "SDL/SDL_image.h"
+
+#include "timer.h"
+#include "globalVar.h"
+#include "display.h"
+#include "etcFunc.h"
+#include "collisionC.h"
+#include "ball.h"
+#include "bounceBall.h"
+#include "pac.h"
+#include "blackhole.h"
+#include "ghost.h"
+#include "powerups.h"
+#include "cannonball.h"
+#include "cannon.h"
+#include "nugget.h"
+
+#include "menu.h"
+#include "level1.h"
+#include "level2.h"
+#include "level3.h"
+    
+
+int main(int argc, char *argv[])
+{ 
+  if( !init() )
+    return 1; 
+  if( TTF_Init() == -1 ) 
+    return false; 
+  load_files_global();
+
+  int levelScore[3] = {0,0,0};
+  int menuChoice = 0; 
+
+  while (1)
+  {
+    menuChoice = mainMenu();
+
+    if( menuChoice == 1 || menuChoice == 2 || menuChoice == 3 )
+    {
+      //load
+      if( menuChoice == 2 )
+      {
+        int next = 0;
+        std::ifstream in( "saves.txt" );
+        for( int i=0; i<3; i++ )
+        {
+	  in >> next;
+	  levelScore[i] = next;
+        }
+        in.close();    
+      }
+      //start game
+      if( menuChoice == 1 )
+      {
+        if( levelScore[0] == 0 )
+	  levelScore[0] = level1(); 
+        if( levelScore[1] == 0 )
+	  levelScore[1] = level2(); 
+        if( levelScore[2] == 0 )
+	  levelScore[2] = level3(); 
+      }
+
+      //quit
+      if( menuChoice == 3 )
+	break;
+    }
+  }
+
+  clean_up_global();
+  TTF_Quit();
+  SDL_Quit();
+  return 0;
+}
+
+
+
+
+

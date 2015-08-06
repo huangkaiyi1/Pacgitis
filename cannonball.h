@@ -1,0 +1,66 @@
+
+
+class Cannonball
+{ 
+  int x, y;
+  int xVel, yVel;
+  public:
+  bool exploded;
+  int fuseLit;
+  int fuseTime;
+  const int BLAST_CIRCUM;
+
+  Cannonball( int startx, int starty, int xVelo, int yVelo): BLAST_CIRCUM(30)
+  {
+    exploded = false;
+    fuseLit = SDL_GetTicks();
+    fuseTime = 450;
+    x = startx;
+    y = starty;
+    xVel = xVelo;
+    yVel = yVelo;
+  }
+  
+
+  bool explosion()
+  { 
+    //int explodeMoment = SDL_GetTicks();
+    if ( myTimer.get_ticks() < 2000 ){ return 0; }
+    else
+    {
+      apply_surface( x, y, explosion1Pic, screen );
+      apply_surface( x-5, y-5, explosion2Pic, screen );
+      apply_surface( x-10, y-10, explosion3Pic, screen );
+    }
+    exploded = true;
+  }
+    
+    
+  void fire() //for cannon
+  {
+    x += xVel;
+    y += yVel;
+    if( x < (pacRect.x + pacRect.w) && x > pacRect.x 
+    	&& y < (pacRect.y + pacRect.h) && y > pacRect.y )
+    { 
+      death = true; 
+      exploded = true;
+    } 
+    if ( SDL_GetTicks() - fuseTime > fuseLit ){ explosion(); }
+    else{ apply_surface( x, y, cannonballPic, screen ); }
+  } 
+
+  bool isExploded(){ return exploded; }
+  void posUpdate( int newX, int newY )
+  { 
+    x = newX; 
+    y = newY; 
+    exploded = false;
+    fuseLit = SDL_GetTicks();
+  }
+
+};
+
+
+
+

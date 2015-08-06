@@ -1,0 +1,79 @@
+
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <cmath>
+#include <stdlib.h>
+#include <vector>
+#include <fstream>
+#include "SDL/SDL_ttf.h"
+#include "SDL/SDL_image.h"
+
+#include "timer.h"
+#include "globalVar.h"
+#include "display.h"
+#include "etcFunc.h"
+#include "collisionC.h"
+#include "ball.h"
+#include "bounceBall.h"
+#include "pac.h"
+#include "blackhole.h"
+#include "ghost.h"
+#include "powerups.h"
+#include "cannonball.h"
+#include "cannon.h"
+#include "nugget.h"
+
+#include "menu.h"
+#include "level1.h"
+#include "level2.h"
+#include "level3.h"
+    
+
+int main(int argc, char *argv[])
+{ 
+  if( init()==false ) { return 1; }
+  if( TTF_Init() == -1 ){ return false; }
+  load_files_global();
+
+  int beatLevel[3] = {1,1,0};
+  int choice; 
+  while (1)
+  {
+    choice = mainMenu();
+    if( choice == 1 || choice == 2 || choice == 3 || choice == 4 )
+    {
+      if( choice == 2 )
+      {
+        int next = 0;
+        std::ifstream in( "saves.txt" );
+        for( int i=0; i<3; i++ )
+        {
+	  in >> next;
+	  beatLevel[i] = next;
+        }
+        in.close();    
+      }
+      if( choice == 4 )
+	break;
+
+      if( beatLevel[0] == 0 )
+	beatLevel[0] = level1(); 
+      if( beatLevel[1] == 0 )
+	beatLevel[1] = level2(); 
+      if( beatLevel[2] == 0 )
+	beatLevel[2] = level3(); 
+    }
+    
+
+  }
+  clean_up_global();
+  TTF_Quit();
+  SDL_Quit();
+  return 0;
+}
+
+
+
+
+

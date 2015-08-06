@@ -1,0 +1,96 @@
+class Menuball
+{
+  unsigned short ID;
+  int xVel, yVel, speed;
+  SDL_Rect boundsRect, thisRect;
+
+  public:
+  Menuball( unsigned short ID, SDL_Rect eyeRect)
+  {
+    boundsRect = eyeRect; 
+    speed = 20;
+    if( ID == 0 )
+    {
+      xVel = speed; yVel = -speed;
+      initRect( &thisRect, 350, 150, 100, 100 );
+    }
+    if( ID == 1 )
+    {
+      xVel = -speed; yVel = -speed;
+      initRect( &thisRect, 750, 150, 100, 100 );
+    }
+  }
+
+  void move()
+  {
+    int variance = SDL_GetTicks()%5;
+    if ( enemySpeed != 0 )
+    {
+      if ( xVel>0 ){ xVel = speed + variance;} 
+      if ( yVel<0 ){ yVel = -speed + variance;}
+      thisRect.x += xVel;
+      thisRect.y += yVel;
+    }
+    if( thisRect.x <= boundsRect.x || thisRect.x + thisRect.w >= boundsRect.x + boundsRect.w )
+    {
+      xVel *= -1; 
+      thisRect.x += xVel;
+    }
+    if( thisRect.y <= boundsRect.y || thisRect.y + thisRect.w >= boundsRect.y + boundsRect.h )
+    {
+      yVel *= -1; 
+      thisRect.y += yVel;
+    }
+    display();
+  }
+
+  void display()
+  {
+    apply_surface( thisRect.x, thisRect.y, ballPic, screen );
+  }
+
+};
+
+
+
+unsigned short mainMenu()
+{
+  load_files_menu();
+  SDL_Rect baseRightRect, baseLeftRect;
+  initRect( &baseLeftRect, 280, 85, 330, 310 );
+  initRect( &baseRightRect, 620, 90, 330, 310 );
+  Menuball left( 0, baseLeftRect ), right( 1, baseRightRect );
+  unsigned short choice = 0;
+
+  while( 1 )
+  {
+    fps.start();
+    while( SDL_PollEvent( &event ) )
+    {
+      if( event.type == SDL_KEYDOWN )
+      {
+        switch( event.key.keysym.sym )
+        {
+	  case SDLK_1: choice = 1; break;
+	  case SDLK_2: choice = 2; break;
+	  case SDLK_3: choice = 3; break;
+        }
+      }
+      if( event.type == SDL_QUIT ) SDL_QUIT;
+    }
+  SDL_FillRect( screen, &screen->clip_rect, 
+  SDL_MapRGB( screen->format, 0xFF, 0xFF, 0xFF ) );
+  apply_surface( 200, 0, background, screen );
+  left.move(), right.move();
+
+  SDL_Flip( screen );
+  if( fps.get_ticks() < 1000 / FRAMES_PER_SECOND )
+  {
+    SDL_Delay( ( 1000 / FRAMES_PER_SECOND ) - fps.get_ticks() );
+  }
+  if ( choice != 0 ){ return choice; }
+  }
+  clean_upMenu();
+}
+
+
